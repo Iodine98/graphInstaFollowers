@@ -4,11 +4,12 @@ from pyvis.network import Network
 
 
 class Graph:
-    def __init__(self, usr_name, user_followers, first_degree_users: int = -1):
+    def __init__(self, usr_name, user_followers, first_degree_users: int = -1, **kwargs):
         """
-       :param usr_name: The current username passed in main.py
-       :param user_followers: user_followers object
-       :param first_degree_users: number of first degree users in graph (-1 means all of them)
+        :param kwargs: A Network instance from pyvis.Network
+        :param usr_name: The current username passed in main.py
+        :param user_followers: user_followers object
+        :param first_degree_users: number of first degree users in graph (-1 means all of them)
        """
         self.nodes: Dict[str, int] = {}
         self.reference = 0
@@ -16,7 +17,7 @@ class Graph:
         self.user_followers: Dict[str, List[str]] = user_followers
         self.first_degree_users: int = first_degree_users
         self.followers_list = list(self.user_followers.keys())[0:self.first_degree_users]
-        self.net = Network(height='100%', width='100%', bgcolor='#222222', font_color='white')
+        self.net = kwargs.get('network', Network(height='100%', width='100%', bgcolor='#222222', font_color='white'))
         self.net.barnes_hut(spring_length=90, spring_strength=0.01)
 
     def add_node(self, usr_name: str):
