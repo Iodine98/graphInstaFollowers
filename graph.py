@@ -17,8 +17,9 @@ class Graph:
         self.user_followers: Dict[str, List[str]] = user_followers
         self.first_degree_users: int = first_degree_users
         self.followers_list = list(self.user_followers.keys())[0:self.first_degree_users]
-        self.net = kwargs.get('network', Network(height='100%', width='100%', bgcolor='#222222', font_color='white'))
-        self.net.barnes_hut(spring_length=90, spring_strength=0.01)
+        self.net = kwargs.get('network', Network(height='1000px', width='100%', bgcolor='#222222', font_color='white'))
+        self.net.hrepulsion(spring_length=90, spring_strength=0.01)
+        # self.net.barnes_hut(spring_length=90, spring_strength=0.01)
 
     def add_node(self, usr_name: str):
         self.net.add_node(self.reference, label=usr_name)
@@ -42,8 +43,8 @@ class Graph:
                     end = self.nodes[follower_of_follower]
                 self.net.add_edge(start, end)
 
-    def render(self):
+    def render(self, html_page='net.html'):
         self.add_node(self.usr_name)
         self.add_first_degree_followers()
         self.add_second_degree_followers()
-        self.net.show('net.html')
+        self.net.show(html_page, notebook=False)

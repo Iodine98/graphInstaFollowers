@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "graphinstafollowers"
+version = "0.1.0"
+description = ""
+authors = ["= <=>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+insta-scrape = "^2.1.2"
+instaclient = "^2.9.20"
+requests = "2.25.1"
+selenium = "3.141.0"
+urllib3 = "1.25.10"
+tqdm = "^4.65.0"
+pyvis = "^0.3.2"
+
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
