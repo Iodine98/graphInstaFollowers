@@ -1,50 +1,60 @@
-from typing import List, Dict
+from typing import List, Dict, Set
+from dash import Dash, html
 import dash_cytoscape as cyto
+
+# cyto.load_extra_layouts()
+app = Dash(__name__)
 
 
 class Graph:
-    def __init__(self, usr_name, user_followers, first_degree_users: int = -1, **kwargs):
+    def __init__(self, user_followers, **kwargs):
         """
         :param kwargs: A Network instance from pyvis.Network
         :param usr_name: The current username passed in main.py
         :param user_followers: user_followers object
         :param first_degree_users: number of first degree users in graph (-1 means all of them)
        """
-        self.nodes: Dict[str, int] = {}
-        self.reference = 0
-        self.usr_name: str = usr_name
         self.user_followers: Dict[str, List[str]] = user_followers
-        self.first_degree_users: int = first_degree_users
-        self.followers_list = list(self.user_followers.keys())[0:self.first_degree_users]
-        self.net = kwargs.get('network', Network(height='1000px', width='100%', bgcolor='#222222',
-                                                 font_color='white'))
-        self.net.hrepulsion(spring_length=90, spring_strength=0.01)
-        # self.net.barnes_hut(spring_length=90, spring_strength=0.01)
+        self.profiles: Set[str] = self.get_unique_profile_set()
+        self.nodes = self.create_nodes()
+        self.edges = self.create_edges()
+        if 'cyto_settings' in kwargs:
+            self.cyto_settings = kwargs['cyto_settings']
+        else:
+            self.cyto_settings = {
+                'id': 'cytoscape-insta-graph',
+                'style': {'width': '100%', 'height': '1040px'},
+                'layout': {
+                    'name': 'cose'
+                }
+            }
 
-    def add_node(self, usr_name: str):
-        self.net.add_node(self.reference, label=usr_name)
-        self.nodes[usr_name] = self.reference
-        self.reference += 1
+    def get_unique_profile_set(self) -> Set[str]:
+        unique_profiles = set()
+        for labels in self.user_followers.values():
+            for label in labels:
+                unique_profiles.add(label)
+        return unique_profiles
 
-    def add_first_degree_followers(self):
-        for follower in self.followers_list:
-            if follower == self.usr_name:
-                continue
-            self.add_node(follower)
+    def create_nodes(self):
+        return [
+            {'data': {'id': label, 'label': label}, }
+            for label in self.profiles
+        ]
 
-    def add_second_degree_followers(self):
-        for follower in self.followers_list:
-            start = self.nodes[follower]
-            for follower_of_follower in self.user_followers[follower]:
-                if follower_of_follower in self.nodes:
-                    end = self.nodes[follower_of_follower]
-                else:
-                    self.add_node(follower_of_follower)
-                    end = self.nodes[follower_of_follower]
-                self.net.add_edge(start, end)
+    def create_edges(self):
+        return [
+            {'data': {'source': source, 'target': target}}
+            for source, targets in self.user_followers.items()
+            for target in targets
+        ]
 
-    def render(self, html_page='net.html'):
-        self.add_node(self.usr_name)
-        self.add_first_degree_followers()
-        self.add_second_degree_followers()
-        self.net.show(html_page, notebook=False)
+    def render_layout(self, debug=False):
+        if debug:
+            print("nodes", self.nodes)
+            print("edges", self.edges)
+        app.layout = html.Div(
+            [
+                cyto.Cytoscape(elements=self.nodes + self.edges, **self.cyto_settings)
+            ]
+        )
