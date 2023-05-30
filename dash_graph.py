@@ -1,6 +1,5 @@
 from typing import List, Dict
-
-from pyvis.network import Network
+import dash_cytoscape as cyto
 
 
 class Graph:
